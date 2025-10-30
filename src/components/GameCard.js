@@ -22,6 +22,12 @@ const GameCard = ({game, onGuess}) => {
         }))
     }
 
+    const updateField = (field, index, value) => {
+        setUserGuess(prev => ({
+            ...prev,
+            [field]: prev[field].map((item, i) => i === index ? value : item)
+        }))
+    }
 
 
     return (
@@ -35,6 +41,67 @@ const GameCard = ({game, onGuess}) => {
                 }}
                 />
             </div>
+
+            {!showForm ? (
+                <button 
+                    className="guess-button"
+                    onClick={() => setShowForm(true)}
+                >
+                    Make Your Guess!
+                </button>    
+            ) : (
+                <form onSubmit={handleSubmit} className="guess-form">
+                    <div className="form-group">
+                        <label>Game Title:</label>
+                        <input 
+                        type="text"
+                        value={userGuess.title}
+                        onChange={(e) => setUserGuess(prev => ({...prev, title: e.target.value}))}
+                        placeholder="Enter title"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Platform:</label>
+                        {userGuess.platform.map((platform, index) =>(
+                            
+                        <input 
+                        key={index}
+                        type="text"
+                        value={platform}
+                        onChange={(e) => updateField('platforms', index, e.target.value)}
+                        placeholder="Enter Platform"
+                        />
+                    ))}
+                        <button type="button" onClick={() => addField('platforms')}>
+                            Add Another Platform
+                        </button>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Developers:</label>
+                        {userGuess.developers.map((developer, index) => (
+                        <input
+                            key={index}
+                            type="text"
+                            value={developer}
+                            onChange={(e) => updateField('developers', index, e.target.value)}
+                            placeholder="Enter developer company"
+                        />
+                        ))}
+                        <button type="button" onClick={() => addField('developers')}>
+                        Add Another Developer
+                        </button>
+                    </div>
+                    <div className="form-buttons">
+                        <button type="submit">Submit Guess</button>
+                        <button type="button" onClick={() => setShowForm(false)}>
+                        Cancel
+                        </button>
+                    </div>
+                </form>
+            )
+
+            }
         </div>
     )
 }

@@ -1,31 +1,39 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import {useState, useEffect} from 'react';
 import GameCard from './components/GameCard';
-import ScoreBoard from './components/ScoreBoard'
-
+import ScoreBoard from './components/ScoreBoard';
 
 function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
-  const [gameHistory, setGameHistory] = useState([])
+  const [gameHistory, setGameHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const API_KEY = process.env.REACT_APP_RAWG_API_KEY;;
-  const API_URL= `https://api.rawg.io/api/games?key=${API_KEY}`  
+  const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
+  const API_URL = `https://api.rawg.io/api/games?key=${API_KEY}`;
 
-  const fetchRandomGame = async () => {
+  // Add this function to create a proxy URL
+const createProxyUrl = (url) => {
+  // Using a free CORS proxy service (for development only)
+  return `https://cors-anywhere.herokuapp.com/${url}`;
+  // Or use: `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+};
+
+// Then modify your fetch calls:
+const response = await fetch(createProxyUrl(API_URL));
+
+  // Wrap fetchRandomGame in useCallback to memoize it
+  const fetchRandomGame = useCallback(async () => {
     setLoading(true);
-
-    try{
-      //get a random page to distribute load
-      const randomPage = Math.floor(Math.random() * 50) +1;
-      const response = await fetch(`${API_URL}&page=${randomPage}&page_size=1`)
+    try {
+      const randomPage = Math.floor(Math.random() * 50) + 1;
+      const response = await fetch(`${API_URL}&page=${randomPage}&page_size=1`);
       const data = await response.json();
-
+      
       if (data.results && data.results.length > 0) {
         const game = data.results[0];
         
-        //Fetch detailed game info (including developers)
         const detailResponse = await fetch(`https://api.rawg.io/api/games/${game.id}?key=${API_KEY}`);
         const gameDetails = await detailResponse.json();
         
@@ -34,16 +42,16 @@ function App() {
           developers: gameDetails.developers || []
         });
       }
-    }catch (error){
+    } catch (error) {
       console.error('Error fetching game:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_KEY]); // Add dependencies that are used inside
 
   useEffect(() => {
     fetchRandomGame();
-  }, []);
+  }, [fetchRandomGame]);
 
   const handleGuess = (userGuess) => {
     const correctAnswers = {
