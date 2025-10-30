@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState, useEffect, use} from 'react';
+import {useState, useEffect} from 'react';
 import GameCard from './components/GameCard';
 import ScoreBoard from './components/ScoreBoard'
 
@@ -10,7 +10,7 @@ function App() {
   const [gameHistory, setGameHistory] = useState([])
   const [loading, setLoading] = useState(true);
 
-  const API_KEY= ``;
+  const API_KEY = process.env.REACT_APP_RAWG_API_KEY;;
   const API_URL= `https://api.rawg.io/api/games?key=${API_KEY}`  
 
   const fetchRandomGame = async () => {
@@ -85,15 +85,44 @@ function App() {
     }
 
     setScore(prev => prev+points);
+    setGameHistory(prev => [...prev, {
+      game:currentGame,
+      userGuess,
+      results,
+      pointsEarned:points
+    }])
 
+    // Load next game
+    fetchRandomGame();
+  }
+
+  if (loading){
+    return <div className="loading">Loading game...</div>
   }
 
   return (
     <div className="App">
       <header className="app-header">
         <h1>Guessing Game</h1>
+        <ScoreBoard score={score} />
       </header>
-      
+
+      {currentGame &&(
+        <GameCard
+          game={currentGame}
+          onGuess={handleGuess} 
+          />
+      )}  
+  
+      <div className='game-history'>
+        <h3>Recent Games</h3>
+        {gameHistory.slice(-5).map((history, index)=>(
+          <div key={index} className='history-item'>
+            <span>{history.game.name}</span>
+            <span>+{history.pointsEarned} points</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
