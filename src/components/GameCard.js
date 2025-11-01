@@ -1,107 +1,72 @@
 import { useState } from "react";
 
 const GameCard = ({game, onGuess}) => {
-    const [showForm, setShowForm] = useState(false);
     const [userGuess, setUserGuess] = useState({
         title:'',
-        platform: [''],
-        developers: ['']
+        platform: '',
+        developers: ''
     })    
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onGuess(userGuess);
         setUserGuess({title: '', platforms: [''], developers: ['']});
-        setShowForm(false);
     }
 
-    const addField = (field) => {
-        setUserGuess(prev=> ({
-            ...prev,
-            [field]: [...prev[field], '']
-        }))
-    }
-
-    const updateField = (field, index, value) => {
+    const handleInputChange = (field, value) =>{
         setUserGuess(prev => ({
             ...prev,
-            [field]: prev[field].map((item, i) => i === index ? value : item)
+            [field]: value
         }))
     }
 
-
     return (
-        <div className="game-card">
+        <div className="game-container">
             <div className="cover-art">
                 <img 
-                src={game.background_image}
-                alt={`Cover art for ${game.name}`}
-                onError={(e) =>{
-                    e.target.src = '/placeholder-image.png'
-                }}
+                    src={game.background_image}
+                    alt={`Game cover`}
+                    onError={(e) =>{
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                    }}
                 />
+                <div className="placeholder" style={{display: 'none'}}>
+                    No Image Available
+                </div>
             </div>
-
-            {!showForm ? (
-                <button 
-                    className="guess-button"
-                    onClick={() => setShowForm(true)}
-                >
-                    Make Your Guess!
-                </button>    
-            ) : (
-                <form onSubmit={handleSubmit} className="guess-form">
-                    <div className="form-group">
+            
+            <form onSubmit={handleSubmit} className="guess-form">
+                    <div className="input-group">
                         <label>Game Title:</label>
                         <input 
-                        type="text"
-                        value={userGuess.title}
-                        onChange={(e) => setUserGuess(prev => ({...prev, title: e.target.value}))}
-                        placeholder="Enter title"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Platform:</label>
-                        {userGuess.platform.map((platform, index) =>(
-                            
-                        <input 
-                        key={index}
-                        type="text"
-                        value={platform}
-                        onChange={(e) => updateField('platforms', index, e.target.value)}
-                        placeholder="Enter Platform"
-                        />
-                    ))}
-                        <button type="button" onClick={() => addField('platforms')}>
-                            Add Another Platform
-                        </button>
-                    </div>
-
-                    <div className="form-group">
-                        <label>Developers:</label>
-                        {userGuess.developers.map((developer, index) => (
-                        <input
-                            key={index}
                             type="text"
-                            value={developer}
-                            onChange={(e) => updateField('developers', index, e.target.value)}
-                            placeholder="Enter developer company"
+                            value={userGuess.title}
+                            onChange={(e) => handleInputChange('title', e.target.value)}
+                            placeholder="Guess the game title"
                         />
-                        ))}
-                        <button type="button" onClick={() => addField('developers')}>
-                        Add Another Developer
-                        </button>
                     </div>
-                    <div className="form-buttons">
-                        <button type="submit">Submit Guess</button>
-                        <button type="button" onClick={() => setShowForm(false)}>
-                        Cancel
-                        </button>
+                    <div className="input-group">
+                        <label>Platform:</label>
+                        <input 
+                        type="text"
+                        value={userGuess.platform}
+                        onChange={(e) => handleInputChange('platform', e.target.value)}
+                        placeholder="Guess the Platform (PS3, PC, XBOX, etc.)"
+                        />
                     </div>
-                </form>
-            )
 
-            }
+                    <div className="input-group">
+                        <label>Developers:</label>
+                        <input
+                            type="text"
+                            value={userGuess.developer}
+                            onChange={(e) => handleInputChange('developer', e.target.value)}
+                            placeholder="Guess the developer company"
+                        />
+                    </div>
+                        <button type="submit">Submit Guess</button>                    
+                </form>
         </div>
     )
 }
