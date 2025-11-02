@@ -7,10 +7,19 @@ const GameCard = ({game, onGuess}) => {
         developers: ''
     })    
 
+    const [lastResults, setLastResults] = useState(null);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        onGuess(userGuess);
-        setUserGuess({title: '', platforms: [''], developers: ['']});
+
+        if (!userGuess.title?.trim() && !userGuess.platform?.trim() && !userGuess.developer?.trim()){
+            alert('Please fill in at least one field!');
+            return;
+        }
+
+        const results = onGuess(userGuess);
+        setLastResults(results);
+        setUserGuess({title: '', platforms: '', developers: ''});
     }
 
     const handleInputChange = (field, value) =>{
@@ -35,10 +44,24 @@ const GameCard = ({game, onGuess}) => {
                     No Image Available
                 </div>
             </div>
+
+            {/* Results feedback added*/ }
+            {lastResults && (
+                <div className="results-feedback">
+                    <h3>Last Guess Results:</h3>
+                    <p>Points Earned: <strong>{lastResults.points}</strong></p>
+                    <div className="results-details">
+                        {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
+                        {lastResults.results.platform && <span className="correct">✓ Platform Correct!</span>}
+                        {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
+                        {lastResults.points === 0 && <span className="incorrect">No correct answers!</span>}
+                    </div>
+                </div>
+              )}
             
             <form onSubmit={handleSubmit} className="guess-form">
                     <div className="input-group">
-                        <label>Game Title:</label>
+                        <label>Game Title: <span className="points-info">(50 points)</span></label>
                         <input 
                             type="text"
                             value={userGuess.title}
@@ -46,8 +69,9 @@ const GameCard = ({game, onGuess}) => {
                             placeholder="Guess the game title"
                         />
                     </div>
+
                     <div className="input-group">
-                        <label>Platform:</label>
+                        <label>Platform:<span className="points-info">(25 points)</span></label>
                         <input 
                         type="text"
                         value={userGuess.platform}
@@ -57,7 +81,7 @@ const GameCard = ({game, onGuess}) => {
                     </div>
 
                     <div className="input-group">
-                        <label>Developers:</label>
+                        <label>Developers:<span className="points-info">(25 points)</span></label>
                         <input
                             type="text"
                             value={userGuess.developer}
@@ -65,7 +89,8 @@ const GameCard = ({game, onGuess}) => {
                             placeholder="Guess the developer company"
                         />
                     </div>
-                        <button type="submit">Submit Guess</button>                    
+                    <button type="submit">Submit Guess</button>
+                    <p className="hint">Tip: You can fill in one, two, or all three fields!</p>                    
                 </form>
         </div>
     )

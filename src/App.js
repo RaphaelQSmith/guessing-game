@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import GameCard from './components/GameCard';
 import ScoreBoard from './components/ScoreBoard';
@@ -22,6 +22,7 @@ function App() {
                 
         if (data.results && data.results.length > 0) {
           const game = data.results[0];
+           console.log('Game data:', game);
           
           // Get detailed info
           const detailResponse = await fetch(
@@ -50,30 +51,38 @@ function App() {
     if (!currentGame) return; 
 
     let points = 0;
+    const results = {
+      title: false,
+      platform: false,
+      developer: false
+    }
 
     // Check title
-    if (userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
+    if (userGuess.title.trim() && userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
       points += 50;
+      results.title = true;
     }
 
     // Check platform
    const platforms = currentGame.platforms || [];
-    const platformGuess = userGuess.platform.toLowerCase().trim();
+   const platformGuess = userGuess.platform ? userGuess.platform.toLowerCase().trim():'';
     if (platformGuess && platforms.some(p => 
       p.toLowerCase().includes(platformGuess) ||
       platformGuess.includes(p.toLowerCase())
     )) {
       points += 25;
+      results.platform = true;
     }
 
     // Check developer - with safe array access
     const developers = currentGame.developers || [];
-    const developerGuess = userGuess.developer.toLowerCase().trim();
+    const developerGuess = userGuess.developer ? userGuess.developer.toLowerCase().trim():'';
     if (developerGuess && developers.some(d => 
       d.toLowerCase().includes(developerGuess) ||
       developerGuess.includes(d.toLowerCase())
     )) {
       points += 25;
+      results.developer = true;
     }
     setScore(score + points);
     
@@ -109,6 +118,8 @@ function App() {
     };
 
     fetchNewGame();
+
+    return {points, results}
   };
 
   if (loading){
@@ -121,7 +132,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="app-header">
+      <header className="header">
         <h1>Guessing Game</h1>
         <ScoreBoard score={score} />
       </header>
@@ -130,7 +141,6 @@ function App() {
         game={currentGame}
         onGuess={handleGuess} 
       />
-     
     </div>
   );
 }
