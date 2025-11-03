@@ -61,6 +61,7 @@ function App() {
     if (userGuess.title.trim() && userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
       points += 50;
       results.title = true;
+      console.log('Title correct!')
     }
 
     // Check platform
@@ -72,6 +73,7 @@ function App() {
     )) {
       points += 25;
       results.platform = true;
+      console.log('Platform correct!')
     }
 
     // Check developer - with safe array access
@@ -83,6 +85,7 @@ function App() {
     )) {
       points += 25;
       results.developer = true;
+      console.log('Developer correct!')
     }
     setScore(score + points);
     

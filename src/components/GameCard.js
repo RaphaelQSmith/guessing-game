@@ -1,4 +1,5 @@
 import { useState } from "react";
+import GuessResults from "./GuessResults";
 
 const GameCard = ({game, onGuess}) => {
     const [userGuess, setUserGuess] = useState({
@@ -16,8 +17,11 @@ const GameCard = ({game, onGuess}) => {
             alert('Please fill in at least one field!');
             return;
         }
-
+        
+        console.log('Submitting guess', userGuess)
         const results = onGuess(userGuess);
+        console.log('Results from onGuess:', results);
+
         setLastResults(results);
         setUserGuess({title: '', platforms: '', developers: ''});
     }
@@ -45,20 +49,8 @@ const GameCard = ({game, onGuess}) => {
                 </div>
             </div>
 
-            {/* Results feedback added*/ }
-            {lastResults && (
-                <div className="results-feedback">
-                    <h3>Last Guess Results:</h3>
-                    <p>Points Earned: <strong>{lastResults.points}</strong></p>
-                    <div className="results-details">
-                        {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
-                        {lastResults.results.platform && <span className="correct">✓ Platform Correct!</span>}
-                        {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
-                        {lastResults.points === 0 && <span className="incorrect">No correct answers!</span>}
-                    </div>
-                </div>
-              )}
-            
+            <GuessResults lastResults={lastResults} />
+
             <form onSubmit={handleSubmit} className="guess-form">
                     <div className="input-group">
                         <label>Game Title: <span className="points-info">(50 points)</span></label>
