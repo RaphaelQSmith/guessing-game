@@ -7,19 +7,26 @@ function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [totalGames, setTotalGames] = useState(0);
+  const [usedPages, setUsedPages] = useState(new Set())
 
   const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
+
+  const getRandomPage = (totalPages) => {
+    const maxPages = Math.min(totalPages, 1000);
+    return Math.floor(Math.random() * maxPages) +1;
+ };
  
- useEffect(() => {
-    const fetchRandomGame = async () => {
-      setLoading(true);
+
+ 
+ const fetchGame = async (pageNumber) => {
       try {
-        const randomPage = Math.floor(Math.random() * 50) + 1;
         const response = await fetch(
-          `https://api.rawg.io/api/games?key=${API_KEY}&page=${randomPage}&page_size=1`
+          `https://api.rawg.io/api/games?key=${API_KEY}&page=${pageNumber}&page_size=1`
         );
+
         const data = await response.json();
-                
+        
         if (data.results && data.results.length > 0) {
           const game = data.results[0];
            console.log('Game data:', game);
@@ -30,25 +37,96 @@ function App() {
           );
           const gameDetails = await detailResponse.json();
           
-          setCurrentGame({
+          return{
+            id: game.id,
             name: game.name || 'Unknown Game',
             background_image: game.background_image,
             platforms: game.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
             developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || []
-          });
+          };
         }
+        return null;
       } catch (error) {
         console.error('Error fetching game:', error);
-      } finally {
-        setLoading(false);
   }
 };
 
-    fetchRandomGame();
-  }, [API_KEY]);
+    const loadNextGame = async () => {
+      setLoading(true);
+      try {
+        const countResponse = await fetch(
+          `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1`
+        )
+        const countData = await countResponse.json();
+        const totalCount = countData.count;
+        const totalPages = Math.ceil(totalCount / 20);
 
-  const handleGuess = (userGuess) => {
-    if (!currentGame) return; 
+        let randomPage;
+        let attempts = 0;
+
+        do {
+          randomPage = getRandomPage(totalPages);
+          attempts++;
+        } while (usedPages.has(randomPage) && attempts < 10);
+
+        const game = await fetchGame(randomPage);
+        
+        if (game) {
+          setCurrentGame(game);
+          setUsedPages(prev => {
+            const newSet = new Set(prev);
+            newSet.add(randomPage);
+            
+            if (newSet.size > 100) {
+              const array = Array.from(newSet);
+              return new Set(array.slice(-100))
+            }
+            return newSet;
+          })
+        
+       }
+      } catch (error) {
+        console.error('Error fetching new game:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    useEffect(() =>{
+      const loadInitialGame = async () => {
+        setLoading(true);
+        try {
+          const countResponse = await fetch(
+            `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1`
+          );
+          const countData = await countResponse.json();
+          const totalCount = countData.count;
+          setTotalGames(totalCount);
+
+          const totalPages = Math.ceil(totalCount / 20);
+          const randomPage = getRandomPage(totalPages);
+          const game = await fetchGame(randomPage);
+
+          if (game) {
+            setCurrentGame(game);
+            setUsedPages(new Set([randomPage]));
+          }
+          } catch (error) {
+        console.error('Error fetching new game:', error);
+      } finally {
+        setLoading(false);
+      }
+    }; 
+    loadInitialGame();
+  },[API_KEY]);
+
+
+    const handleGuess = (userGuess) => {
+      if (!currentGame) return;
+    
+    console.log('Current game:', currentGame)
+    console.log('User guess:', userGuess)
 
     let points = 0;
     const results = {
@@ -58,7 +136,7 @@ function App() {
     }
 
     // Check title
-    if (userGuess.title.trim() && userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
+    if (userGuess.title && userGuess.title.trim() && userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
       points += 50;
       results.title = true;
       console.log('Title correct!')
@@ -76,9 +154,9 @@ function App() {
       console.log('Platform correct!')
     }
 
-    // Check developer - with safe array access
+    // Check developer 
     const developers = currentGame.developers || [];
-    const developerGuess = userGuess.developer ? userGuess.developer.toLowerCase().trim():'';
+    const developerGuess = userGuess.developer ? userGuess.developer.toLowerCase().trim() : '';
     if (developerGuess && developers.some(d => 
       d.toLowerCase().includes(developerGuess) ||
       developerGuess.includes(d.toLowerCase())
@@ -87,46 +165,18 @@ function App() {
       results.developer = true;
       console.log('Developer correct!')
     }
+
+    console.log('Final results:', { points, results });
+
     setScore(score + points);
     
-    // Fetch new game
-    const fetchNewGame = async () => {
-      setLoading(true);
-      try {
-        const randomPage = Math.floor(Math.random() * 50) + 1;
-        const response = await fetch(
-          `https://api.rawg.io/api/games?key=${API_KEY}&page=${randomPage}&page_size=1`
-        );
-        const data = await response.json();
-        
-        if (data.results && data.results.length > 0) {
-          const game = data.results[0];
-          const detailResponse = await fetch(
-            `https://api.rawg.io/api/games/${game.id}?key=${API_KEY}`
-          );
-          const gameDetails = await detailResponse.json();
-          
-          setCurrentGame({
-            name: game.name || 'Unknown Game',
-            background_image: game.background_image,
-            platforms: game.parent_platforms?.map(p => p.platform.name).filter(Boolean) || [],
-            developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || []
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching new game:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setTimeout(loadNextGame, 10000);
 
-    fetchNewGame();
-
-    return {points, results}
+    return { points, results };
   };
 
   if (loading){
-    return <div className="loading">Loading game...</div>
+    return <div className="loading">Loading game...({totalGames.toLocaleString()} total games)</div>
   }
 
   if (!currentGame){
@@ -137,10 +187,14 @@ function App() {
     <div className="App">
       <header className="header">
         <h1>Guessing Game</h1>
-        <ScoreBoard score={score} />
+        <div className='header-info'>
+          <ScoreBoard score={score} />
+          <div className='game-count'> Total Games: {totalGames.toLocaleString()}</div>
+        </div>
       </header>
 
       <GameCard
+        key={currentGame.id}
         game={currentGame}
         onGuess={handleGuess} 
       />

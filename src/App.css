@@ -189,3 +189,55 @@ button:hover {
   margin-top: 10px;
   margin-bottom: 0;
 }
+
+.correct-answers {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: left;
+}
+
+.correct-answers h4 {
+  margin: 0 0 10px 0;
+  color: #1976d2;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.answer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.answer-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #e3f2fd;
+}
+
+.answer-item:last-child {
+  border-bottom: none;
+}
+
+.answer-item strong {
+  color: #1976d2;
+  margin-right: 8px;
+}
+
+/* Result Details Update */
+.result-details h4 {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.result-items {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
