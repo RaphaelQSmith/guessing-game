@@ -241,3 +241,59 @@ button:hover {
   flex-wrap: wrap;
   margin-top: 5px;
 }
+
+/* Input Hints */
+.input-hint {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Next Game Section */
+.next-game-section {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #dee2e6;
+}
+
+.next-game-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.next-game-button:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.next-game-hint {
+  margin-top: 10px;
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Update button styles for better visual hierarchy */
+button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:disabled:hover {
+  background: #6c757d;
+  transform: none;
+  box-shadow: none;
+}

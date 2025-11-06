@@ -9,6 +9,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [totalGames, setTotalGames] = useState(0);
   const [usedPages, setUsedPages] = useState(new Set())
+  const [showNextButton, setShowNextButton] = useState(false)
 
   const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
 
@@ -48,11 +49,13 @@ function App() {
         return null;
       } catch (error) {
         console.error('Error fetching game:', error);
-  }
+        return null;
+    }
 };
 
     const loadNextGame = async () => {
       setLoading(true);
+      setShowNextButton(false);
       try {
         const countResponse = await fetch(
           `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1`
@@ -76,7 +79,6 @@ function App() {
           setUsedPages(prev => {
             const newSet = new Set(prev);
             newSet.add(randomPage);
-            
             if (newSet.size > 100) {
               const array = Array.from(newSet);
               return new Set(array.slice(-100))
@@ -91,7 +93,6 @@ function App() {
         setLoading(false);
       }
     };
-
 
     useEffect(() =>{
       const loadInitialGame = async () => {
@@ -112,27 +113,24 @@ function App() {
             setCurrentGame(game);
             setUsedPages(new Set([randomPage]));
           }
-          } catch (error) {
+      } catch (error) {
         console.error('Error fetching new game:', error);
       } finally {
         setLoading(false);
       }
     }; 
     loadInitialGame();
-  },[API_KEY]);
+  }, [API_KEY]);
 
 
     const handleGuess = (userGuess) => {
       if (!currentGame) return;
-    
-    console.log('Current game:', currentGame)
-    console.log('User guess:', userGuess)
 
-    let points = 0;
-    const results = {
-      title: false,
-      platform: false,
-      developer: false
+      let points = 0;
+      const results = {
+        title: false,
+        platform: false,
+        developer: false
     }
 
     // Check title
@@ -163,17 +161,17 @@ function App() {
     )) {
       points += 25;
       results.developer = true;
-      console.log('Developer correct!')
     }
 
-    console.log('Final results:', { points, results });
-
     setScore(score + points);
+    setShowNextButton(true);
     
-    setTimeout(loadNextGame, 10000);
-
     return { points, results };
   };
+
+  const handleNextGame = () => {
+    loadNextGame();
+  }
 
   if (loading){
     return <div className="loading">Loading game...({totalGames.toLocaleString()} total games)</div>
@@ -196,7 +194,10 @@ function App() {
       <GameCard
         key={currentGame.id}
         game={currentGame}
-        onGuess={handleGuess} 
+        onGuess={handleGuess}
+        API_KEY={API_KEY}
+        showNextButton={showNextButton}
+        onNextGame={handleNextGame} 
       />
     </div>
   );

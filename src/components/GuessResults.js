@@ -3,8 +3,6 @@ const GuessResults = ({ lastResults, correctAnswers }) => {
     return null;
   };
 
-  console.log('Rendering GuessResults with:', lastResults)
-
   return (
     <div className="results-feedback">
       <h3>Last Guess Results:</h3>
@@ -29,14 +27,14 @@ const GuessResults = ({ lastResults, correctAnswers }) => {
 
 
       <div className="result-details">
-        {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
-        {lastResults.results.platform && <span className="correct">✓ Platform Correct!</span>}
-        {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
-        {lastResults.points === 0 && <span className="incorrect">No correct answers this round</span>}
+        <h4>Your Results:</h4>
+        <div className='result-items'>
+          {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
+          {lastResults.results.platform && <span className="correct">✓ Platform Correct!</span>}
+          {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
+          {lastResults.points === 0 && <span className="incorrect">No correct answers this round</span>}
+        </div>
       </div>
-      <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '10px'}}>
-        Loading next game...
-      </p>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import GuessResults from "./GuessResults";
+import AutocompleteInput from "./AutocompleteInput";
 
-const GameCard = ({ game, onGuess }) => {
+const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
     const [userGuess, setUserGuess] = useState({
         title:'',
         platform: '',
@@ -11,6 +12,7 @@ const GameCard = ({ game, onGuess }) => {
     const [lastResults, setLastResults] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [correctAnswers, setCorrectAnswers] = useState(null);
+    const [showResults, setShowResults] = useState(false);
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -36,8 +38,9 @@ const GameCard = ({ game, onGuess }) => {
         console.log('Results from onGuess:', results);
 
         setUserGuess({title: '', platform: '', developer: ''});
-
         setLastResults(results);
+        setShowResults(true);
+        setIsSubmitting(false);
     }
 
     const handleInputChange = (field, value) => {
@@ -45,6 +48,17 @@ const GameCard = ({ game, onGuess }) => {
             ...prev,
             [field]: value
         }));
+    }
+
+    const handleSuggestionSelect = (suggestion) => {
+        console.log('Selected suggestion:', suggestion)
+    }
+
+    const handleNextGameClick = () =>{
+        setShowResults(false);
+        setLastResults(null);
+        setCorrectAnswers(null);
+        onNextGame();
     }
 
     return (
@@ -63,23 +77,28 @@ const GameCard = ({ game, onGuess }) => {
                 </div>
             </div>
 
-            {lastResults && (
-                <GuessResults 
+            {showResults && lastResults && (
+              <GuessResults 
                 lastResults={lastResults}
                 correctAnswers={correctAnswers} 
-                />
+              />
             )}
 
-            <form onSubmit={handleSubmit} className="guess-form">
+            {!showResults ? (
+                <form onSubmit={handleSubmit} className="guess-form">
                     <div className="input-group">
                         <label>Game Title: <span className="points-info">(50 points)</span></label>
-                        <input 
-                            type="text"
+                        <AutocompleteInput 
                             value={userGuess.title}
-                            onChange={(e) => handleInputChange('title', e.target.value)}
-                            placeholder="Guess the game title"
+                            onChange={(value) => handleInputChange('title', value)}
+                            placeholder="Start typing to see suggestions..."
                             disabled={isSubmitting}
+                            onSelectSuggestion={handleSuggestionSelect}
+                            API_KEY={API_KEY}    
                         />
+                        <div className="input-hint">
+                            Start typing to see game suggestions with images
+                        </div>
                     </div>
 
                     <div className="input-group">
@@ -88,9 +107,12 @@ const GameCard = ({ game, onGuess }) => {
                         type="text"
                         value={userGuess.platform}
                         onChange={(e) => handleInputChange('platform', e.target.value)}
-                        placeholder="Guess the Platform (PS3, PC, XBOX, etc.)"
+                        placeholder="Platform (Playstation, PC, Xbox, etc.) *optional"
                         disabled={isSubmitting}
                         />
+                        <div className="input-hint">
+                            Common platforms: PC, PlayStation, Xbox, Nintendo Switch
+                        </div>
                     </div>
 
                     <div className="input-group">
@@ -102,12 +124,28 @@ const GameCard = ({ game, onGuess }) => {
                             placeholder="Guess the developer company"
                             disabled={isSubmitting}
                         />
+                        <div className="input-hint">
+                            Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts
+                        </div>
                     </div>
 
                     <button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Loading Next Game...' : 'Submit Guess'}</button>
+                        {isSubmitting ? 'Loading Next Game...' : 'Submit Guess'}
+                    </button>
                     <p className="hint">Tip: You can fill in one, two, or all three fields!</p>                    
-                </form>
+                </form> ) :(
+                    <div className="next-game-section">
+                        <button
+                            onClick={handleNextGameClick}
+                            className="next-game-button"
+                        >
+                            Next Game →
+                        </button>
+                        <p className="next-game-hint">
+                            Click to continue
+                        </p>
+                    </div>
+                )}
         </div>
     )
 }
