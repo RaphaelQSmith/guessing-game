@@ -29,10 +29,7 @@ function App() {
         const data = await response.json();
         
         if (data.results && data.results.length > 0) {
-          const game = data.results[0];
-           console.log('Game data:', game);
-          
-          // Get detailed info
+          const game = data.results[0];   
           const detailResponse = await fetch(
             `https://api.rawg.io/api/games/${game.id}?key=${API_KEY}`
           );
@@ -43,7 +40,9 @@ function App() {
             name: game.name || 'Unknown Game',
             background_image: game.background_image,
             platforms: game.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
-            developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || []
+            developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
+            released: game.released,
+            metacritic: game.metacritic
           };
         }
         return null;
@@ -129,27 +128,13 @@ function App() {
       let points = 0;
       const results = {
         title: false,
-        platform: false,
         developer: false
     }
 
     // Check title
     if (userGuess.title && userGuess.title.trim() && userGuess.title.toLowerCase().trim() === currentGame.name.toLowerCase().trim()) {
-      points += 50;
+      points += 75;
       results.title = true;
-      console.log('Title correct!')
-    }
-
-    // Check platform
-   const platforms = currentGame.platforms || [];
-   const platformGuess = userGuess.platform ? userGuess.platform.toLowerCase().trim():'';
-    if (platformGuess && platforms.some(p => 
-      p.toLowerCase().includes(platformGuess) ||
-      platformGuess.includes(p.toLowerCase())
-    )) {
-      points += 25;
-      results.platform = true;
-      console.log('Platform correct!')
     }
 
     // Check developer 

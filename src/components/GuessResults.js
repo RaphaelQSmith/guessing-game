@@ -5,7 +5,7 @@ const GuessResults = ({ lastResults, correctAnswers }) => {
 
   return (
     <div className="results-feedback">
-      <h3>Last Guess Results:</h3>
+      <h3>Guess Results:</h3>
       <p>Points earned: <strong>{lastResults.points}</strong></p>
 
       {correctAnswers && (
@@ -14,9 +14,6 @@ const GuessResults = ({ lastResults, correctAnswers }) => {
           <div className="answer-details">
             <div className="answer-item">
               <strong>Title:</strong> {correctAnswers.title}
-            </div>
-            <div className="answer-item">
-              <strong>Platforms:</strong> {correctAnswers.platforms.join(', ')}
             </div>
             <div className="answer-item">
               <strong>Developers:</strong> {correctAnswers.developers.join(', ')}
@@ -30,7 +27,6 @@ const GuessResults = ({ lastResults, correctAnswers }) => {
         <h4>Your Results:</h4>
         <div className='result-items'>
           {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
-          {lastResults.results.platform && <span className="correct">✓ Platform Correct!</span>}
           {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
           {lastResults.points === 0 && <span className="incorrect">No correct answers this round</span>}
         </div>
