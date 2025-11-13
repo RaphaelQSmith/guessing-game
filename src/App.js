@@ -8,8 +8,9 @@ function App() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [totalGames, setTotalGames] = useState(0);
-  const [usedPages, setUsedPages] = useState(new Set())
-  const [showNextButton, setShowNextButton] = useState(false)
+  const [usedPages, setUsedPages] = useState(new Set());
+  const [showNextButton, setShowNextButton] = useState(false);
+  const [attempts, setAttempts] = useState(0);
 
   const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
 
@@ -23,7 +24,7 @@ function App() {
  const fetchGame = async (pageNumber) => {
       try {
         const response = await fetch(
-          `https://api.rawg.io/api/games?key=${API_KEY}&page=${pageNumber}&page_size=1`
+          `https://api.rawg.io/api/games?key=${API_KEY}&page=${pageNumber}&page_size=1&metacritic=70,100`
         );
 
         const data = await response.json();
@@ -42,7 +43,8 @@ function App() {
             platforms: game.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
             developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
             released: game.released,
-            metacritic: game.metacritic
+            rating: game.rating,
+            metacritic: game.metacritic,
           };
         }
         return null;
@@ -55,43 +57,76 @@ function App() {
     const loadNextGame = async () => {
       setLoading(true);
       setShowNextButton(false);
+      let game = null;
+      let currentAttempts = 0;
+      const maxAttempts = 10;
+
       try {
         const countResponse = await fetch(
-          `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1`
-        )
+          `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1&metacritc=70,100`
+        );
         const countData = await countResponse.json();
         const totalCount = countData.count;
         const totalPages = Math.ceil(totalCount / 20);
 
         let randomPage;
-        let attempts = 0;
 
         do {
           randomPage = getRandomPage(totalPages);
-          attempts++;
-        } while (usedPages.has(randomPage) && attempts < 10);
+          currentAttempts++;
+          setAttempts(currentAttempts)
 
-        const game = await fetchGame(randomPage);
-        
-        if (game) {
+          game = await fetchGame(randomPage);
+
+          if(game && game.metacritic){
+            break;
+          }
+        } while (currentAttempts < maxAttempts && (!game || !game.metacritic));
+
+        if (game && game.metacritic){
           setCurrentGame(game);
           setUsedPages(prev => {
-            const newSet = new Set(prev);
+            const newSet = new  Set(prev);
             newSet.add(randomPage);
-            if (newSet.size > 100) {
-              const array = Array.from(newSet);
-              return new Set(array.slice(-100))
+            if (newSet.size > 100){
+              const array =Array.from(newSet);
+              return new Set(array.slice(-100));
             }
             return newSet;
-          })
-        
-       }
-      } catch (error) {
-        console.error('Error fetching new game:', error);
+          });
+        } else {
+          console.log('No high-rated games found, falling back to any game');
+          const fallbackResponse = await fetch(
+            `https://api.rawg.io/api/games?key=${API_KEY}&page=${getRandomPage(100)}&page_size=1`
+          );
+          const fallbackData = await fallbackResponse.json();
+
+          if (fallbackData.results && fallbackData.results.length > 0){
+            const fallbackGame = fallbackData.results[0];
+            const detailResponse = await fetch(
+              `https://api.rawg.io/api/games/${fallbackGame.id}?key=${API_KEY}`
+            );
+
+            const gameDetails = await detailResponse.json();
+
+            setCurrentGame({
+              id: fallbackGame.id,
+              name: fallbackGame.name || 'Unknown Game',
+              background_image: fallbackGame.platform?.map(p => p.platform?.name).filter(Boolean) || [],
+              developer:gameDetails.developer?.map(d =>d.name).filter(Boolean) || [],
+              released: fallbackGame.released,
+              rating: fallbackGame.rating,
+              metacritic : fallbackGame.metacritic || 'N/A'
+            });
+          }
+        }
+      }catch(error){
+        console.error('Error loading next game:', error);
       } finally {
         setLoading(false);
       }
     };
+
 
     useEffect(() =>{
       const loadInitialGame = async () => {
