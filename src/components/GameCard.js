@@ -56,10 +56,17 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
     onNextGame();
   };
 
-  // Extract year from release date
   const getReleaseYear = (releaseDate) => {
     if (!releaseDate) return null;
     return new Date(releaseDate).getFullYear();
+  };
+
+  const getMetacriticColor = (score) => {
+    if (!score || score === 'N/A') return '#a0aec0';
+    if (score >= 90) return '#68d391'; // Green for exceptional
+    if (score >= 80) return '#d69e2e'; // Yellow for great
+    if (score >= 70) return '#ed8936'; // Orange for good
+    return '#e53e3e'; // Red for poor
   };
 
   return (
@@ -78,7 +85,7 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
         </div>
       </div>
 
-      {/* Game Info Section - Show platforms and other details */}
+      {/* Game Info Section */}
       <div className="game-info">
         <div className="info-section">
           <h3>Platforms</h3>
@@ -102,10 +109,12 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
           </div>
         )}
         
-        {game.rating && (
+        {game.metacritic && game.metacritic !== 'N/A' && (
           <div className="info-section">
-            <h3>Rating</h3>
-            <p>⭐ {game.rating}/5</p>
+            <h3>Metacritic Score</h3>
+            <p style={{ color: getMetacriticColor(game.metacritic), fontWeight: 'bold', fontSize: '1.2rem' }}>
+              {game.metacritic}
+            </p>
           </div>
         )}
       </div>
@@ -117,47 +126,46 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
         />
       )}
 
-      
-    {!showResults ? (
-      <form onSubmit={handleSubmit} className="guess-form">
-        <div className="input-group">
-          <label>Game Title: <span className="points-info">(75 points)</span></label>
-          <AutocompleteInput
-            value={userGuess.title}
-            onChange={(value) => handleInputChange('title', value)}
-            placeholder="Start typing to see suggestions..."
-            disabled={isSubmitting}
-            onSelectSuggestion={handleSuggestionSelect}
-            API_KEY={API_KEY}
-          />
-          <div className="input-hint">
-            Start typing to see game suggestions with images
+      {!showResults ? (
+        <form onSubmit={handleSubmit} className="guess-form">
+          <div className="input-group">
+            <label>Game Title: <span className="points-info">(75 points)</span></label>
+            <AutocompleteInput
+              value={userGuess.title}
+              onChange={(value) => handleInputChange('title', value)}
+              placeholder="Start typing to see suggestions..."
+              disabled={isSubmitting}
+              onSelectSuggestion={handleSuggestionSelect}
+              API_KEY={API_KEY}
+            />
+            <div className="input-hint">
+              Start typing to see game suggestions with images
+            </div>
           </div>
-        </div>
 
-         <div className="input-group">
-          <label>Developer: <span className="points-info">(25 points)</span></label>
-          <input
-            type="text"
-            value={userGuess.developer}
-            onChange={(e) => handleInputChange('developer', e.target.value)}
-            placeholder="e.g., Nintendo, Rockstar, Ubisoft (optional)"
-            disabled={isSubmitting}
-          />
-          <div className="input-hint">
-            Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts
+          <div className="input-group">
+            <label>Developer: <span className="points-info">(25 points)</span></label>
+            <input
+              type="text"
+              value={userGuess.developer}
+              onChange={(e) => handleInputChange('developer', e.target.value)}
+              placeholder="e.g., Nintendo, Rockstar, Ubisoft (optional)"
+              disabled={isSubmitting}
+            />
+            <div className="input-hint">
+              Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts
+            </div>
           </div>
-        </div>
 
-         <div className="submit-button-container">
-          <button type="submit" disabled={isSubmitting} className="submit-button">
-            {isSubmitting ? 'Checking Answers...' : 'Submit Guess'}
-          </button>
-        </div>
-        
-        <p className="hint">Tip: You can fill in one or both fields!</p>
-      </form>
-    ) : (
+          <div className="submit-button-container">
+            <button type="submit" disabled={isSubmitting} className="submit-button">
+              {isSubmitting ? 'Checking Answers...' : 'Submit Guess'}
+            </button>
+          </div>
+          
+          <p className="hint">Tip: You can fill in one or both fields!</p>
+        </form>
+      ) : (
         <div className="next-game-section">
           <button 
             onClick={handleNextGameClick}
