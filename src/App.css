@@ -97,6 +97,7 @@ body {
 }
 
 /* Game Info Section - Sharp design */
+/* Game Info Section - Combined Details */
 .game-info {
   background: rgba(25, 25, 35, 0.8);
   border: 1px solid #3a3a4a;
@@ -124,11 +125,46 @@ body {
   padding-bottom: 8px;
 }
 
-.info-section p {
-  margin: 0;
-  color: #c0c0d0;
-  font-size: 1.1rem;
+/* Details Container */
+.details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 200px;
+  padding: 8px 0;
+  border-bottom: 1px solid #3a3a4a;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: #a0a0b0;
+  font-size: 0.9rem;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+}
+
+.metacritic-score {
+  font-weight: 700;
+  text-shadow: 0 0 10px currentColor;
 }
 
 /* Platforms List - Sharp tags */
@@ -164,6 +200,8 @@ body {
   font-size: 0.9rem;
   font-weight: 400;
 }
+
+
 
 /* Results Feedback - Sharp design */
 .results-feedback {

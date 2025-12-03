@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import GuessResults from './GuessResults';
 import AutocompleteInput from './AutocompleteInput';
 
-const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
+const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, gameOver }) => {
   const [userGuess, setUserGuess] = useState({
     title: '',
     developer: ''
@@ -15,7 +15,7 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (isSubmitting) return;
+    if (isSubmitting || gameOver) return;
     
     if (!userGuess.title?.trim() && !userGuess.developer?.trim()) {
       alert('Please fill in at least one field!');
@@ -39,14 +39,18 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
   };
 
   const handleInputChange = (field, value) => {
-    setUserGuess(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (!gameOver) {
+      setUserGuess(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   const handleSuggestionSelect = (suggestion) => {
-    console.log('Selected suggestion:', suggestion);
+    if (!gameOver) {
+      console.log('Selected suggestion:', suggestion);
+    }
   };
 
   const handleNextGameClick = () => {
@@ -62,11 +66,11 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
   };
 
   const getMetacriticColor = (score) => {
-    if (!score || score === 'N/A') return '#a0aec0';
-    if (score >= 90) return '#68d391'; // Green for exceptional
-    if (score >= 80) return '#d69e2e'; // Yellow for great
-    if (score >= 70) return '#ed8936'; // Orange for good
-    return '#e53e3e'; // Red for poor
+    if (!score) return '#a0a0b0';
+    if (score >= 90) return '#60c060'; // Green for exceptional
+    if (score >= 80) return '#f0c060'; // Yellow for great
+    if (score >= 70) return '#f09060'; // Orange for good
+    return '#f06060'; // Red for poor
   };
 
   return (
@@ -85,7 +89,7 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
         </div>
       </div>
 
-      {/* Game Info Section */}
+      {/* Game Info Section - Combined Metacritic and Year */}
       <div className="game-info">
         <div className="info-section">
           <h3>Platforms</h3>
@@ -102,27 +106,36 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
           </div>
         </div>
         
-        {game.released && (
-          <div className="info-section">
-            <h3>Release Year</h3>
-            <p>{getReleaseYear(game.released)}</p>
+        <div className="info-section">
+          <h3>Details</h3>
+          <div className="details-container">
+            {game.released && (
+              <div className="detail-item">
+                <span className="detail-label">Released</span>
+                <span className="detail-value">{getReleaseYear(game.released)}</span>
+              </div>
+            )}
+            {game.metacritic && (
+              <div className="detail-item">
+                <span className="detail-label">Metacritic</span>
+                <span 
+                  className="detail-value metacritic-score"
+                  style={{ color: getMetacriticColor(game.metacritic) }}
+                >
+                  {game.metacritic}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-        
-        {game.metacritic && game.metacritic !== 'N/A' && (
-          <div className="info-section">
-            <h3>Metacritic Score</h3>
-            <p style={{ color: getMetacriticColor(game.metacritic), fontWeight: 'bold', fontSize: '1.2rem' }}>
-              {game.metacritic}
-            </p>
-          </div>
-        )}
+        </div>
       </div>
 
       {showResults && lastResults && (
         <GuessResults 
           lastResults={lastResults} 
           correctAnswers={correctAnswers}
+          hearts={hearts}
+          gameOver={gameOver}
         />
       )}
 
@@ -133,13 +146,13 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
             <AutocompleteInput
               value={userGuess.title}
               onChange={(value) => handleInputChange('title', value)}
-              placeholder="Start typing to see suggestions..."
-              disabled={isSubmitting}
+              placeholder={gameOver ? "Game Over - Click Next Game" : "Start typing to see suggestions..."}
+              disabled={isSubmitting || gameOver}
               onSelectSuggestion={handleSuggestionSelect}
               API_KEY={API_KEY}
             />
             <div className="input-hint">
-              Start typing to see game suggestions with images
+              {gameOver ? "Game Over! Click 'Play Again' to restart." : "Start typing to see game suggestions with images"}
             </div>
           </div>
 
@@ -149,21 +162,30 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
               type="text"
               value={userGuess.developer}
               onChange={(e) => handleInputChange('developer', e.target.value)}
-              placeholder="e.g., Nintendo, Rockstar, Ubisoft (optional)"
-              disabled={isSubmitting}
+              placeholder={gameOver ? "Game Over - Click Next Game" : "e.g., Nintendo, Rockstar, Ubisoft (optional)"}
+              disabled={isSubmitting || gameOver}
             />
             <div className="input-hint">
-              Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts
+              {gameOver ? "Better luck next time!" : "Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts"}
             </div>
           </div>
 
           <div className="submit-button-container">
-            <button type="submit" disabled={isSubmitting} className="submit-button">
-              {isSubmitting ? 'Checking Answers...' : 'Submit Guess'}
+            <button 
+              type="submit" 
+              disabled={isSubmitting || gameOver} 
+              className={`submit-button ${gameOver ? 'submit-button-disabled' : ''}`}
+            >
+              {gameOver ? 'Game Over' : (isSubmitting ? 'Checking Answers...' : 'Submit Guess')}
             </button>
           </div>
           
-          <p className="hint">Tip: You can fill in one or both fields!</p>
+          <p className="hint">
+            {gameOver 
+              ? "Game Over! Your final score was " + (lastResults?.points || 0) + " points."
+              : `Tip: You have ${hearts} lives remaining. Use them wisely!`
+            }
+          </p>
         </form>
       ) : (
         <div className="next-game-section">
@@ -171,10 +193,13 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame }) => {
             onClick={handleNextGameClick}
             className="next-game-button"
           >
-            Next Game →
+            {gameOver ? 'Play Again' : 'Next Game →'}
           </button>
           <p className="next-game-hint">
-            Review your results above, then click to continue
+            {gameOver 
+              ? "Start a new game with 3 lives and score reset to 0"
+              : `Continuing with ${hearts} lives remaining`
+            }
           </p>
         </div>
       )}
