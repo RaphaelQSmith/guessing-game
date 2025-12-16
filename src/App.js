@@ -7,10 +7,10 @@ function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [totalGames, setTotalGames] = useState(0);
   const [usedPages, setUsedPages] = useState(new Set());
   const [showNextButton, setShowNextButton] = useState(false);
-  const [attempts, setAttempts] = useState(0);
+  const [hearts, setHearts] = useState(3);
+  const [gameOver, setGameOver] = useState(false);
 
   const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
 
@@ -21,7 +21,6 @@ function App() {
 
   const fetchGame = async (pageNumber) => {
     try {
-      // Add metacritic parameter to filter games with score 70+
       const response = await fetch(
         `https://api.rawg.io/api/games?key=${API_KEY}&page=${pageNumber}&page_size=1&metacritic=70,100`
       );
@@ -41,8 +40,7 @@ function App() {
           platforms: game.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
           developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
           released: game.released,
-          rating: game.rating,
-          metacritic: game.metacritic // Include metacritic score
+          metacritic: game.metacritic
         };
       }
       return null;
@@ -55,12 +53,13 @@ function App() {
   const loadNextGame = async () => {
     setLoading(true);
     setShowNextButton(false);
+    setGameOver(false);
+    
     let game = null;
     let currentAttempts = 0;
-    const maxAttempts = 10; // Prevent infinite loops
+    const maxAttempts = 10;
     
     try {
-      // Get count of games with metacritic 70+
       const countResponse = await fetch(
         `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1&metacritic=70,100`
       );
@@ -70,15 +69,12 @@ function App() {
       
       let randomPage;
       
-      // Try to find a valid game
       do {
         randomPage = getRandomPage(totalPages);
         currentAttempts++;
-        setAttempts(currentAttempts);
         
         game = await fetchGame(randomPage);
         
-        // If we found a game with metacritic score, break the loop
         if (game && game.metacritic) {
           break;
         }
@@ -96,8 +92,6 @@ function App() {
           return newSet;
         });
       } else {
-        // Fallback: if we can't find a game with metacritic, try without filter
-        console.log('No high-rated games found, falling back to any game');
         const fallbackResponse = await fetch(
           `https://api.rawg.io/api/games?key=${API_KEY}&page=${getRandomPage(100)}&page_size=1`
         );
@@ -117,8 +111,7 @@ function App() {
             platforms: fallbackGame.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
             developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
             released: fallbackGame.released,
-            rating: fallbackGame.rating,
-            metacritic: fallbackGame.metacritic || 'N/A'
+            metacritic: fallbackGame.metacritic
           });
         }
       }
@@ -129,24 +122,27 @@ function App() {
     }
   };
 
+  const resetGame = () => {
+    setScore(0);
+    setHearts(3);
+    setGameOver(false);
+    setShowNextButton(false);
+    loadNextGame();
+  };
+
   useEffect(() => {
     const loadInitialGame = async () => {
       setLoading(true);
       try {
-        // Get count of games with metacritic 70+
         const countResponse = await fetch(
           `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1&metacritic=70,100`
         );
         const countData = await countResponse.json();
-        const totalCount = countData.count;
-        setTotalGames(totalCount);
-
-        const totalPages = Math.ceil(totalCount / 20);
+        const totalPages = Math.ceil(countData.count / 20);
         let game = null;
         let currentAttempts = 0;
         const maxAttempts = 5;
         
-        // Try to find a valid game with metacritic score
         do {
           const randomPage = getRandomPage(totalPages);
           currentAttempts++;
@@ -157,7 +153,6 @@ function App() {
           setCurrentGame(game);
           setUsedPages(new Set([getRandomPage(totalPages)]));
         } else {
-          // Fallback to any game
           const fallbackResponse = await fetch(
             `https://api.rawg.io/api/games?key=${API_KEY}&page=${getRandomPage(100)}&page_size=1`
           );
@@ -177,8 +172,7 @@ function App() {
               platforms: fallbackGame.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
               developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
               released: fallbackGame.released,
-              rating: fallbackGame.rating,
-              metacritic: fallbackGame.metacritic || 'N/A'
+              metacritic: fallbackGame.metacritic
             });
           }
         }
@@ -193,7 +187,7 @@ function App() {
   }, [API_KEY]);
 
   const handleGuess = (userGuess) => {
-    if (!currentGame) return;
+    if (!currentGame || gameOver) return;
 
     let points = 0;
     const results = {
@@ -215,38 +209,36 @@ function App() {
       points += 25;
       results.developer = true;
     }
-    
-    setScore(score + points);
-    setShowNextButton(true);
 
-    return { points, results };
+    if (points === 0) {
+      const newHearts = hearts - 1;
+      setHearts(newHearts);
+      
+      if (newHearts <= 0) {
+        setGameOver(true);
+      }
+    } else {
+      setScore(score + points);
+    }
+
+    setShowNextButton(true);
+    return { points, results, gameOver: hearts <= 1 && points === 0 };
   };
 
   const handleNextGame = () => {
-    loadNextGame();
+    if (gameOver) {
+      resetGame();
+    } else {
+      loadNextGame();
+    }
   };
 
   if (loading) {
-    return (
-      <div className="loading">
-        Loading quality game... ({totalGames.toLocaleString()} highly-rated games available)
-        {attempts > 0 && <div style={{fontSize: '0.9rem', color: '#a0aec0', marginTop: '10px'}}>Searching for great games... ({attempts})</div>}
-      </div>
-    );
+    return <div className="loading">Loading game...</div>;
   }
 
   if (!currentGame) {
-    return (
-      <div className="loading">
-        No quality games available right now. Try again.
-        <button 
-          onClick={() => window.location.reload()} 
-          style={{marginTop: '20px', padding: '10px 20px', background: '#4299e1', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer'}}
-        >
-          Retry
-        </button>
-      </div>
-    );
+    return <div className="loading">No game data available. Try again.</div>;
   }
 
   return (
@@ -254,7 +246,7 @@ function App() {
       <header className="header">
         <h1>Game Guesser</h1>
         <div className="header-info">
-          <ScoreBoard score={score} />
+          <ScoreBoard score={score} hearts={hearts} gameOver={gameOver} onReset={resetGame} />
         </div>
       </header>
 
@@ -265,6 +257,8 @@ function App() {
         API_KEY={API_KEY}
         showNextButton={showNextButton}
         onNextGame={handleNextGame}
+        hearts={hearts}
+        gameOver={gameOver}
       />
     </div>
   );

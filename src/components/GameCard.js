@@ -67,10 +67,10 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
 
   const getMetacriticColor = (score) => {
     if (!score) return '#a0a0b0';
-    if (score >= 90) return '#60c060'; // Green for exceptional
-    if (score >= 80) return '#f0c060'; // Yellow for great
-    if (score >= 70) return '#f09060'; // Orange for good
-    return '#f06060'; // Red for poor
+    if (score >= 90) return '#60c060';
+    if (score >= 80) return '#f0c060';
+    if (score >= 70) return '#f09060';
+    return '#f06060';
   };
 
   return (
@@ -89,7 +89,6 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
         </div>
       </div>
 
-      {/* Game Info Section - Combined Metacritic and Year */}
       <div className="game-info">
         <div className="info-section">
           <h3>Platforms</h3>
