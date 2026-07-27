@@ -65,6 +65,17 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
     return new Date(releaseDate).getFullYear();
   };
 
+<<<<<<< HEAD
+=======
+  const getMetacriticColor = (score) => {
+    if (!score) return '#a0a0b0';
+    if (score >= 90) return '#60c060';
+    if (score >= 80) return '#f0c060';
+    if (score >= 70) return '#f09060';
+    return '#f06060';
+  };
+
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
   return (
     <div className="game-container">
       <div className="cover-art">
@@ -81,7 +92,6 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
         </div>
       </div>
 
-      {/* Game Info Section */}
       <div className="game-info">
         <div className="info-section">
           <h3>Platforms</h3>
@@ -98,13 +108,33 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
           </div>
         </div>
         
-        {game.released && (
-          <div className="info-section">
-            <h3>Release Year</h3>
-            <p>{getReleaseYear(game.released)}</p>
+        <div className="info-section">
+          <h3>Details</h3>
+          <div className="details-container">
+            {game.released && (
+              <div className="detail-item">
+                <span className="detail-label">Released</span>
+                <span className="detail-value">{getReleaseYear(game.released)}</span>
+              </div>
+            )}
+            {game.metacritic && (
+              <div className="detail-item">
+                <span className="detail-label">Metacritic</span>
+                <span 
+                  className="detail-value metacritic-score"
+                  style={{ color: getMetacriticColor(game.metacritic) }}
+                >
+                  {game.metacritic}
+                </span>
+              </div>
+            )}
           </div>
+<<<<<<< HEAD
         )}
         
+=======
+        </div>
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
       </div>
 
       {showResults && lastResults && (
@@ -123,13 +153,21 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
             <AutocompleteInput
               value={userGuess.title}
               onChange={(value) => handleInputChange('title', value)}
+<<<<<<< HEAD
               placeholder={gameOver ? "Game Over - Click 'Play again' to restart..." : "Start typing to see suggestions..."}
+=======
+              placeholder={gameOver ? "Game Over - Click Next Game" : "Start typing to see suggestions..."}
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
               disabled={isSubmitting || gameOver}
               onSelectSuggestion={handleSuggestionSelect}
               API_KEY={API_KEY}
             />
             <div className="input-hint">
+<<<<<<< HEAD
               {gameOver ? "Game Over! Click 'Play again' to restart..." : "Start typing to see game suggestions with images"}
+=======
+              {gameOver ? "Game Over! Click 'Play Again' to restart." : "Start typing to see game suggestions with images"}
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
             </div>
           </div>
 
@@ -159,8 +197,13 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
           
           <p className="hint">
             {gameOver 
+<<<<<<< HEAD
               ? "You used all your lives! Your final score was  " + (lastResults?.points || 0) + " points." 
               : `Tip: You have ${hearts} lives remaining`
+=======
+              ? "Game Over! Your final score was " + (lastResults?.points || 0) + " points."
+              : `Tip: You have ${hearts} lives remaining. Use them wisely!`
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
             }
           </p>
         </form>
@@ -174,8 +217,13 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
           </button>
           <p className="next-game-hint">
             {gameOver 
+<<<<<<< HEAD
               ? "Start a new game" 
               : `Continuing with ${hearts} remaining`
+=======
+              ? "Start a new game with 3 lives and score reset to 0"
+              : `Continuing with ${hearts} lives remaining`
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
             }
           </p>
         </div>

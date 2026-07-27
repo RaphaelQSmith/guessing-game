@@ -11,11 +11,20 @@ const GuessResults = ({ lastResults, correctAnswers, hearts, gameOver }) => {
       
       {gameOver ? (
         <div className="game-over-content">
+<<<<<<< HEAD
           <p>You've used all your lives for this game!</p>
           <p>Final score: <strong>{lastResults.points}</strong></p>
         </div>
       ) : (
         <p>Points earned: <strong>{lastResults.points}</strong></p>
+=======
+          <p>You've used all your lives!</p>
+          <p>Final score: <strong>{lastResults.points}</strong></p>
+          <p>Click "Play Again" to start over with 3 lives</p>
+        </div>
+      ) : (
+        <p>Points earned this round: <strong>{lastResults.points}</strong></p>
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
       )}
       
       {correctAnswers && (
@@ -42,7 +51,11 @@ const GuessResults = ({ lastResults, correctAnswers, hearts, gameOver }) => {
         </div>
       </div>
 
+<<<<<<< HEAD
       {!gameOver && hearts > 0 && (
+=======
+      {!gameOver && (
+>>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
         <div className="hearts-remaining">
           <p>Lives remaining: {hearts}/3</p>
         </div>
