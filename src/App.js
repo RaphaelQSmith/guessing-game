@@ -8,7 +8,7 @@ function App() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showNextButton, setShowNextButton] = useState(false);
-  const [usedPages, setUsedPages] = useState(new Set())
+  const [ setUsedPages] = useState(new Set())
   const [hearts, setHearts] = useState(3);
   const [gameOver, setGameOver] = useState(false);
 
