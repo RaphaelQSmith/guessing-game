@@ -1,23 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './AutocompleteInput.css';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-const AutocompleteInput = ({ 
-  value, 
-  onChange, 
-  placeholder, 
-  disabled,
-  onSelectSuggestion,
-  API_KEY 
-}) => {
+const AutocompleteInput = ({ value, onChange, placeholder, disabled, onSelectSuggestion, API_KEY }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef(null);
-  const suggestionsRef = useRef(null);
+  const wrapperRef = useRef(null);
 
-  // Fetch suggestions from RAWG API
-  const fetchSuggestions = async (searchTerm) => {
-    if (!searchTerm || searchTerm.length < 2) {
+  // Wrap fetchSuggestions in useCallback
+  const fetchSuggestions = useCallback(async (searchTerm) => {
+    if (!searchTerm || searchTerm.trim().length < 2 || !API_KEY) {
       setSuggestions([]);
       return;
     }
@@ -30,109 +21,91 @@ const AutocompleteInput = ({
       const data = await response.json();
       
       if (data.results) {
-        setSuggestions(data.results.map(game => ({
+        const gameSuggestions = data.results.map(game => ({
           id: game.id,
           name: game.name,
-          released: game.released,
           background_image: game.background_image
-        })));
+        }));
+        setSuggestions(gameSuggestions);
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_KEY]);
 
-  // Debounce the search to avoid too many API calls
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetchSuggestions(value);
-    }, 300); // 300ms delay
+    }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [value]);
+    return () => clearTimeout(timer);
+  }, [value, fetchSuggestions]); // Added fetchSuggestions to dependencies
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (inputRef.current && !inputRef.current.contains(event.target) &&
-          suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleInputChange = (e) => {
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    onChange(newValue);
     setShowSuggestions(true);
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSelectSuggestion = (suggestion) => {
     onChange(suggestion.name);
     setShowSuggestions(false);
-    setSuggestions([]);
     if (onSelectSuggestion) {
       onSelectSuggestion(suggestion);
     }
   };
 
-  const handleInputFocus = () => {
-    if (suggestions.length > 0) {
-      setShowSuggestions(true);
-    }
-  };
-
   return (
-    <div className="autocomplete-container">
+    <div className="autocomplete-wrapper" ref={wrapperRef}>
       <input
-        ref={inputRef}
         type="text"
         value={value}
         onChange={handleInputChange}
-        onFocus={handleInputFocus}
+        onFocus={() => setShowSuggestions(true)}
         placeholder={placeholder}
         disabled={disabled}
         className="autocomplete-input"
       />
       
-      {loading && (
-        <div className="suggestions-loading">Loading suggestions...</div>
-      )}
-
-      {showSuggestions && suggestions.length > 0 && (
-        <div ref={suggestionsRef} className="suggestions-list">
-          {suggestions.map((suggestion) => (
-            <div
-              key={suggestion.id}
-              className="suggestion-item"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              <div className="suggestion-content">
-                
-                <div className="suggestion-text">
-                  <div className="suggestion-title">{suggestion.name}</div>
-                  {suggestion.released && (
-                    <div className="suggestion-meta">
-                      Released: {new Date(suggestion.released).getFullYear()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showSuggestions && suggestions.length === 0 && value.length >= 2 && !loading && (
-        <div className="suggestions-list">
-          <div className="suggestion-item no-results">
-            No games found matching "{value}"
-          </div>
-        </div>
+      {showSuggestions && (suggestions.length > 0 || loading) && (
+        <ul className="suggestions-list">
+          {loading ? (
+            <li className="suggestion-loading">Loading suggestions...</li>
+          ) : (
+            suggestions.map((suggestion) => (
+              <li
+                key={suggestion.id}
+                onClick={() => handleSelectSuggestion(suggestion)}
+                className="suggestion-item"
+              >
+                {suggestion.background_image && (
+                  <img
+                    src={suggestion.background_image}
+                    alt=""
+                    className="suggestion-image"
+                  />
+                )}
+                <span>{suggestion.name}</span>
+              </li>
+            ))
+          )}
+        </ul>
       )}
     </div>
   );
