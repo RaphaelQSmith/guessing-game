@@ -542,7 +542,6 @@ body {
   margin-top: 16px;
   margin-bottom: 0;
   font-weight: 400;
-<<<<<<< HEAD
   text-align: center;
 }
 
@@ -806,7 +805,5 @@ body {
 .reset-button:hover {
   background: linear-gradient(135deg, #dd6b20, #c05621);
   transform: translateY(-1px);
-=======
   text-align: center
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
 }

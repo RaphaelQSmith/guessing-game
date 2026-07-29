@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import GameCard from './components/GameCard';
 import ScoreBoard from './components/ScoreBoard';
@@ -7,15 +7,12 @@ function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
   const [showNextButton, setShowNextButton] = useState(false);
-  const [ setUsedPages] = useState(new Set())
-=======
-  const [usedPages, setUsedPages] = useState(new Set());
-  const [showNextButton, setShowNextButton] = useState(false);
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
   const [hearts, setHearts] = useState(3);
   const [gameOver, setGameOver] = useState(false);
+
+  // Background reference for tracked pages (does not trigger re-renders)
+  const usedPagesRef = useRef(new Set());
 
   const API_KEY = process.env.REACT_APP_RAWG_API_KEY;
 
@@ -24,7 +21,7 @@ function App() {
     return Math.floor(Math.random() * maxPages) + 1;
   };
 
-  const fetchGame = async (pageNumber) => {
+  const fetchGame = useCallback(async (pageNumber) => {
     try {
       const response = await fetch(
         `https://api.rawg.io/api/games?key=${API_KEY}&page=${pageNumber}&page_size=1&metacritic=70,100`
@@ -53,9 +50,9 @@ function App() {
       console.error('Error fetching game:', error);
       return null;
     }
-  };
+  }, [API_KEY]);
 
-  const loadNextGame = async () => {
+  const loadNextGame = useCallback(async () => {
     setLoading(true);
     setShowNextButton(false);
     setGameOver(false);
@@ -87,20 +84,14 @@ function App() {
       
       if (game && game.metacritic) {
         setCurrentGame(game);
-        setUsedPages(prev => {
-          const newSet = new Set(prev);
-          newSet.add(randomPage);
-          if (newSet.size > 100) {
-            const array = Array.from(newSet);
-            return new Set(array.slice(-100));
-          }
-          return newSet;
-        });
+        
+        // Track page in useRef
+        usedPagesRef.current.add(randomPage);
+        if (usedPagesRef.current.size > 100) {
+          const array = Array.from(usedPagesRef.current);
+          usedPagesRef.current = new Set(array.slice(-100));
+        }
       } else {
-<<<<<<< HEAD
-        // Fallback
-=======
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
         const fallbackResponse = await fetch(
           `https://api.rawg.io/api/games?key=${API_KEY}&page=${getRandomPage(100)}&page_size=1`
         );
@@ -120,10 +111,6 @@ function App() {
             platforms: fallbackGame.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
             developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
             released: fallbackGame.released,
-<<<<<<< HEAD
-            rating: fallbackGame.rating,
-=======
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
             metacritic: fallbackGame.metacritic
           });
         }
@@ -133,23 +120,15 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_KEY, fetchGame]);
 
-<<<<<<< HEAD
-  const resetGame = () =>{
-=======
   const resetGame = () => {
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
     setScore(0);
     setHearts(3);
     setGameOver(false);
     setShowNextButton(false);
     loadNextGame();
-<<<<<<< HEAD
-  }
-=======
   };
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
 
   useEffect(() => {
     const loadInitialGame = async () => {
@@ -159,13 +138,7 @@ function App() {
           `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1&metacritic=70,100`
         );
         const countData = await countResponse.json();
-<<<<<<< HEAD
-        const totalCount = countData.count;
-
-        const totalPages = Math.ceil(totalCount / 20);
-=======
         const totalPages = Math.ceil(countData.count / 20);
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
         let game = null;
         let currentAttempts = 0;
         const maxAttempts = 5;
@@ -178,7 +151,7 @@ function App() {
         
         if (game && game.metacritic) {
           setCurrentGame(game);
-          setUsedPages(new Set([getRandomPage(totalPages)]));
+          usedPagesRef.current = new Set([getRandomPage(totalPages)]);
         } else {
           const fallbackResponse = await fetch(
             `https://api.rawg.io/api/games?key=${API_KEY}&page=${getRandomPage(100)}&page_size=1`
@@ -199,10 +172,6 @@ function App() {
               platforms: fallbackGame.platforms?.map(p => p.platform?.name).filter(Boolean) || [],
               developers: gameDetails.developers?.map(d => d.name).filter(Boolean) || [],
               released: fallbackGame.released,
-<<<<<<< HEAD
-              rating: fallbackGame.rating,
-=======
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
               metacritic: fallbackGame.metacritic
             });
           }
@@ -215,7 +184,7 @@ function App() {
     };
 
     loadInitialGame();
-  }, [API_KEY]);
+  }, [API_KEY, fetchGame]);
 
   const handleGuess = (userGuess) => {
     if (!currentGame || gameOver) return;
@@ -241,49 +210,27 @@ function App() {
       results.developer = true;
     }
 
-<<<<<<< HEAD
-    // Check if guess earned any points
-=======
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
     if (points === 0) {
       const newHearts = hearts - 1;
       setHearts(newHearts);
       
       if (newHearts <= 0) {
         setGameOver(true);
-<<<<<<< HEAD
-        setShowNextButton(true);
-      }
-    } else {
-      setScore(score + points);
-      setShowNextButton(true);
-    }
-
-=======
       }
     } else {
       setScore(score + points);
     }
 
     setShowNextButton(true);
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
     return { points, results, gameOver: hearts <= 1 && points === 0 };
   };
 
   const handleNextGame = () => {
-<<<<<<< HEAD
-    if (gameOver){
-      resetGame();
-    } else {
-    loadNextGame();
-  }
-=======
     if (gameOver) {
       resetGame();
     } else {
       loadNextGame();
     }
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
   };
 
   if (loading) {
@@ -299,11 +246,7 @@ function App() {
       <header className="header">
         <h1>Game Guesser</h1>
         <div className="header-info">
-<<<<<<< HEAD
-          <ScoreBoard score={score} hearts={hearts} gameOver={gameOver} />
-=======
           <ScoreBoard score={score} hearts={hearts} gameOver={gameOver} onReset={resetGame} />
->>>>>>> eb1ae63d41384e82eb50cc10e62015ee34bd0431
         </div>
       </header>
 
