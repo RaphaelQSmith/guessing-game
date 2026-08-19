@@ -13,7 +13,7 @@ const GuessResults = ({ lastResults, correctAnswers, hearts, gameOver }) => {
         <div className="game-over-content">
           <p>You've used all your lives!</p>
           <p>Final score: <strong>{lastResults.points}</strong></p>
-          <p>Click "Play Again" to start over with 3 lives</p>
+          <p>Click "Play Again" to start over with 7 lives</p>
         </div>
       ) : (
         <p>Points earned this round: <strong>{lastResults.points}</strong></p>

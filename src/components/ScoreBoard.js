@@ -3,7 +3,7 @@ import React from 'react';
 const ScoreBoard = ({ score, hearts, gameOver, onReset }) => {
   const renderHearts = () => {
     const heartIcons = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 7; i++) {
       heartIcons.push(
         <span
           key={i}

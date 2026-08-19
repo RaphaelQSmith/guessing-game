@@ -8,7 +8,7 @@ function App() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showNextButton, setShowNextButton] = useState(false);
-  const [hearts, setHearts] = useState(3);
+  const [hearts, setHearts] = useState(7);
   const [gameOver, setGameOver] = useState(false);
 
   // Background reference for tracked pages (does not trigger re-renders)
@@ -124,7 +124,7 @@ function App() {
 
   const resetGame = () => {
     setScore(0);
-    setHearts(3);
+    setHearts(7);
     setGameOver(false);
     setShowNextButton(false);
     loadNextGame();
