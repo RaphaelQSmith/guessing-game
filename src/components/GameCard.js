@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import GuessResults from './GuessResults';
 import AutocompleteInput from './AutocompleteInput';
 
-const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, gameOver }) => {
+const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, gameOver, minDeveloperGuessLength = 3 }) => {
   const [userGuess, setUserGuess] = useState({
     title: '',
     developer: ''
@@ -19,6 +19,12 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
     
     if (!userGuess.title?.trim() && !userGuess.developer?.trim()) {
       alert('Please fill in at least one field!');
+      return;
+    }
+
+    const developerTrimmed = (userGuess.developer || '').trim();
+    if (developerTrimmed && developerTrimmed.length < minDeveloperGuessLength) {
+      alert(`Developer guess must be at least ${minDeveloperGuessLength} letters long.`);
       return;
     }
 
@@ -161,11 +167,11 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
               type="text"
               value={userGuess.developer}
               onChange={(e) => handleInputChange('developer', e.target.value)}
-              placeholder={gameOver ? "Game Over - Click Play Again" : "e.g., Nintendo, Rockstar, Ubisoft (optional)"}
+              placeholder={gameOver ? "Game Over - Click Play Again" : "e.g., Nintendo, Rockstar, Ubisoft (optional, min. 3 letters)"}
               disabled={isSubmitting || gameOver}
             />
             <div className="input-hint">
-              {gameOver ? "Better luck next time!" : "Common developers: Nintendo, Rockstar, Ubisoft, Electronic Arts"}
+              {gameOver ? "Better luck next time!" : "Developer guesses need at least 3 letters (optional)"}
             </div>
           </div>
 

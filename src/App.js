@@ -3,6 +3,10 @@ import './App.css';
 import GameCard from './components/GameCard';
 import ScoreBoard from './components/ScoreBoard';
 
+// Minimum length required for a developer guess to be accepted (guesses shorter
+// than this are ignored entirely, so a single letter can't match a developer).
+const MIN_DEVELOPER_GUESS_LENGTH = 3;
+
 function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
@@ -202,10 +206,17 @@ function App() {
 
     const developers = currentGame.developers || [];
     const developerGuess = userGuess.developer ? userGuess.developer.toLowerCase().trim() : '';
-    if (developerGuess && developers.some(d => 
-      d.toLowerCase().includes(developerGuess) ||
-      developerGuess.includes(d.toLowerCase())
-    )) {
+
+    // Only evaluate developer guesses that meet the minimum length requirement.
+    // Shorter entries are treated as "not guessed" (no points, no heart lost),
+    // preventing single letters from matching dev names via substring.
+    if (
+      developerGuess.length >= MIN_DEVELOPER_GUESS_LENGTH &&
+      developers.some(d =>
+        d.toLowerCase().includes(developerGuess) ||
+        developerGuess.includes(d.toLowerCase())
+      )
+    ) {
       points += 25;
       results.developer = true;
     }
@@ -259,6 +270,7 @@ function App() {
         onNextGame={handleNextGame}
         hearts={hearts}
         gameOver={gameOver}
+        minDeveloperGuessLength={MIN_DEVELOPER_GUESS_LENGTH}
       />
     </div>
   );
