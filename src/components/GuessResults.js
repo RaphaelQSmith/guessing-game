@@ -38,7 +38,7 @@ const GuessResults = ({ lastResults, correctAnswers, hearts, gameOver }) => {
         <div className="result-items">
           {lastResults.results.title && <span className="correct">✓ Title Correct!</span>}
           {lastResults.results.developer && <span className="correct">✓ Developer Correct!</span>}
-          {lastResults.points === 0 && !gameOver && <span className="incorrect">No correct answers - Lost a life!</span>}
+          {lastResults.points === 0 && !gameOver && <span className="incorrect">No correct answers - Lost one heart!</span>}
           {gameOver && <span className="incorrect">❌ Out of lives!</span>}
         </div>
       </div>

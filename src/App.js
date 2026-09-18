@@ -6,6 +6,19 @@ import ScoreBoard from './components/ScoreBoard';
 // Minimum length required for a developer guess to be accepted (guesses shorter
 // than this are ignored entirely, so a single letter can't match a developer).
 const MIN_DEVELOPER_GUESS_LENGTH = 3;
+const SKILL_UNLOCK_COUNT = 5;
+
+export const shouldUnlockSkill = (rightAnswers) => {
+  return rightAnswers >= SKILL_UNLOCK_COUNT && rightAnswers % SKILL_UNLOCK_COUNT === 0;
+};
+
+export const calculatePointsWithSkill = (points, skillType) => {
+  if (skillType === 'bonus') {
+    return Math.round(points * 1.2);
+  }
+
+  return points;
+};
 
 function App() {
   const [currentGame, setCurrentGame] = useState(null);
@@ -14,6 +27,9 @@ function App() {
   const [showNextButton, setShowNextButton] = useState(false);
   const [hearts, setHearts] = useState(7);
   const [gameOver, setGameOver] = useState(false);
+  const [correctAnswerCount, setCorrectAnswerCount] = useState(0);
+  const [skillReady, setSkillReady] = useState(false);
+  const [activeSkill, setActiveSkill] = useState(null);
 
   // Background reference for tracked pages (does not trigger re-renders)
   const usedPagesRef = useRef(new Set());
@@ -131,7 +147,23 @@ function App() {
     setHearts(7);
     setGameOver(false);
     setShowNextButton(false);
+    setCorrectAnswerCount(0);
+    setSkillReady(false);
+    setActiveSkill(null);
     loadNextGame();
+  };
+
+  const handleSkillChoice = (skill) => {
+    if (skill === 'heal') {
+      setHearts((currentHearts) => Math.min(7, currentHearts + 1));
+    }
+
+    if (skill === 'bonus') {
+      setActiveSkill('bonus');
+    }
+
+    setSkillReady(false);
+    setCorrectAnswerCount(0);
   };
 
   useEffect(() => {
@@ -207,9 +239,6 @@ function App() {
     const developers = currentGame.developers || [];
     const developerGuess = userGuess.developer ? userGuess.developer.toLowerCase().trim() : '';
 
-    // Only evaluate developer guesses that meet the minimum length requirement.
-    // Shorter entries are treated as "not guessed" (no points, no heart lost),
-    // preventing single letters from matching dev names via substring.
     if (
       developerGuess.length >= MIN_DEVELOPER_GUESS_LENGTH &&
       developers.some(d =>
@@ -224,16 +253,30 @@ function App() {
     if (points === 0) {
       const newHearts = hearts - 1;
       setHearts(newHearts);
-      
+
       if (newHearts <= 0) {
         setGameOver(true);
       }
-    } else {
-      setScore(score + points);
+
+      setShowNextButton(true);
+      return { points: 0, results, gameOver: hearts <= 1 && points === 0 };
+    }
+
+    const adjustedPoints = activeSkill === 'bonus'
+      ? calculatePointsWithSkill(points, 'bonus')
+      : points;
+
+    setScore((currentScore) => currentScore + adjustedPoints);
+
+    const nextCorrectAnswerCount = correctAnswerCount + 1;
+    setCorrectAnswerCount(nextCorrectAnswerCount);
+
+    if (shouldUnlockSkill(nextCorrectAnswerCount)) {
+      setSkillReady(true);
     }
 
     setShowNextButton(true);
-    return { points, results, gameOver: hearts <= 1 && points === 0 };
+    return { points: adjustedPoints, results, gameOver: false, bonusApplied: activeSkill === 'bonus' };
   };
 
   const handleNextGame = () => {
@@ -271,6 +314,9 @@ function App() {
         hearts={hearts}
         gameOver={gameOver}
         minDeveloperGuessLength={MIN_DEVELOPER_GUESS_LENGTH}
+        skillReady={skillReady}
+        onSkillChoice={handleSkillChoice}
+        activeSkill={activeSkill}
       />
     </div>
   );

@@ -142,6 +142,65 @@ body {
   backdrop-filter: blur(20px);
 }
 
+.skill-panel {
+  background: linear-gradient(135deg, rgba(74, 108, 220, 0.12), rgba(96, 192, 96, 0.12));
+  border: 1px solid #4a6cdc;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.skill-panel h3 {
+  margin: 0 0 8px;
+  color: #a0c0ff;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.skill-panel p {
+  margin: 0 0 16px;
+  color: #e0e0f0;
+}
+
+.skill-options {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skill-button {
+  border: none;
+  color: #fff;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.skill-button:hover {
+  transform: translateY(-1px);
+}
+
+.skill-heal {
+  background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
+}
+
+.skill-bonus {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.active-skill-banner {
+  background: rgba(72, 187, 120, 0.12);
+  border: 1px solid #48bb78;
+  color: #9ae6b4;
+  padding: 10px 14px;
+  margin: 16px 0;
+  text-align: center;
+  font-weight: 600;
+}
+
 /* Cover Art - Sharp corners */
 .cover-art {
   margin-bottom: 32px;

@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 import GuessResults from './GuessResults';
 import AutocompleteInput from './AutocompleteInput';
 
-const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, gameOver, minDeveloperGuessLength = 3 }) => {
+const GameCard = ({
+  game,
+  onGuess,
+  API_KEY,
+  showNextButton,
+  onNextGame,
+  hearts,
+  gameOver,
+  minDeveloperGuessLength = 3,
+  skillReady,
+  onSkillChoice,
+  activeSkill
+}) => {
   const [userGuess, setUserGuess] = useState({
     title: '',
     developer: ''
@@ -15,7 +27,7 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (isSubmitting || gameOver) return;
+    if (isSubmitting || gameOver || skillReady) return;
     
     if (!userGuess.title?.trim() && !userGuess.developer?.trim()) {
       alert('Please fill in at least one field!');
@@ -60,6 +72,10 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
   };
 
   const handleNextGameClick = () => {
+    if (skillReady) {
+      return;
+    }
+
     setShowResults(false);
     setLastResults(null);
     setCorrectAnswers(null);
@@ -135,6 +151,27 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
         </div>
       </div>
 
+      {skillReady && (
+        <div className="skill-panel">
+          <h3>Skill Ready!</h3>
+          <p>Choose your reward after 5 correct answers:</p>
+          <div className="skill-options">
+            <button type="button" className="skill-button skill-heal" onClick={() => onSkillChoice('heal')}>
+              Regain 1 Heart
+            </button>
+            <button type="button" className="skill-button skill-bonus" onClick={() => onSkillChoice('bonus')}>
+              +20% Bonus Points
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeSkill === 'bonus' && !gameOver && (
+        <div className="active-skill-banner">
+          Active skill: +20% bonus on every correct answer
+        </div>
+      )}
+
       {showResults && lastResults && (
         <GuessResults 
           lastResults={lastResults} 
@@ -178,10 +215,10 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
           <div className="submit-button-container">
             <button 
               type="submit" 
-              disabled={isSubmitting || gameOver} 
-              className={`submit-button ${gameOver ? 'submit-button-disabled' : ''}`}
+              disabled={isSubmitting || gameOver || skillReady} 
+              className={`submit-button ${gameOver || skillReady ? 'submit-button-disabled' : ''}`}
             >
-              {gameOver ? 'Game Over' : (isSubmitting ? 'Checking Answers...' : 'Submit Guess')}
+              {skillReady ? 'Choose Skill' : (gameOver ? 'Game Over' : (isSubmitting ? 'Checking Answers...' : 'Submit Guess'))}
             </button>
           </div>
           
@@ -197,8 +234,9 @@ const GameCard = ({ game, onGuess, API_KEY, showNextButton, onNextGame, hearts, 
           <button 
             onClick={handleNextGameClick}
             className="next-game-button"
+            disabled={skillReady}
           >
-            {gameOver ? 'Play Again' : 'Next Game →'}
+            {gameOver ? 'Play Again' : (skillReady ? 'Choose skill first' : 'Next Game →')}
           </button>
           <p className="next-game-hint">
             {gameOver 
