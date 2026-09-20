@@ -12,9 +12,9 @@ export const shouldUnlockSkill = (rightAnswers) => {
   return rightAnswers >= SKILL_UNLOCK_COUNT && rightAnswers % SKILL_UNLOCK_COUNT === 0;
 };
 
-export const calculatePointsWithSkill = (points, skillType) => {
+export const calculatePointsWithSkill = (points, skillType, bonusMultiplier = 1) => {
   if (skillType === 'bonus') {
-    return Math.round(points * 1.2);
+    return Math.round(points * (1 + bonusMultiplier * 0.2));
   }
 
   return points;
@@ -30,6 +30,7 @@ function App() {
   const [correctAnswerCount, setCorrectAnswerCount] = useState(0);
   const [skillReady, setSkillReady] = useState(false);
   const [activeSkill, setActiveSkill] = useState(null);
+  const [bonusMultiplier, setBonusMultiplier] = useState(0);
 
   // Background reference for tracked pages (does not trigger re-renders)
   const usedPagesRef = useRef(new Set());
@@ -150,6 +151,7 @@ function App() {
     setCorrectAnswerCount(0);
     setSkillReady(false);
     setActiveSkill(null);
+    setBonusMultiplier(0);
     loadNextGame();
   };
 
@@ -160,6 +162,7 @@ function App() {
 
     if (skill === 'bonus') {
       setActiveSkill('bonus');
+      setBonusMultiplier((currentMultiplier) => currentMultiplier + 1);
     }
 
     setSkillReady(false);
@@ -263,7 +266,7 @@ function App() {
     }
 
     const adjustedPoints = activeSkill === 'bonus'
-      ? calculatePointsWithSkill(points, 'bonus')
+      ? calculatePointsWithSkill(points, 'bonus', bonusMultiplier)
       : points;
 
     setScore((currentScore) => currentScore + adjustedPoints);
@@ -317,6 +320,7 @@ function App() {
         skillReady={skillReady}
         onSkillChoice={handleSkillChoice}
         activeSkill={activeSkill}
+        bonusMultiplier={bonusMultiplier}
       />
     </div>
   );
