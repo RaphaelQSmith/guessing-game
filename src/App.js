@@ -20,6 +20,15 @@ export const calculatePointsWithSkill = (points, skillType, bonusMultiplier = 1)
   return points;
 };
 
+export const applyInfoRevealPenalty = (currentScore) => {
+  return Math.max(currentScore - 20, 0);
+};
+
+const defaultRevealedInfo = {
+  platforms: false,
+  metacritic: false
+};
+
 function App() {
   const [currentGame, setCurrentGame] = useState(null);
   const [score, setScore] = useState(0);
@@ -31,6 +40,7 @@ function App() {
   const [skillReady, setSkillReady] = useState(false);
   const [activeSkill, setActiveSkill] = useState(null);
   const [bonusMultiplier, setBonusMultiplier] = useState(0);
+  const [revealedInfo, setRevealedInfo] = useState(defaultRevealedInfo);
 
   // Background reference for tracked pages (does not trigger re-renders)
   const usedPagesRef = useRef(new Set());
@@ -77,6 +87,7 @@ function App() {
     setLoading(true);
     setShowNextButton(false);
     setGameOver(false);
+    setRevealedInfo(defaultRevealedInfo);
     
     let game = null;
     let currentAttempts = 0;
@@ -152,6 +163,7 @@ function App() {
     setSkillReady(false);
     setActiveSkill(null);
     setBonusMultiplier(0);
+    setRevealedInfo(defaultRevealedInfo);
     loadNextGame();
   };
 
@@ -169,9 +181,22 @@ function App() {
     setCorrectAnswerCount(0);
   };
 
+  const handleRevealInfo = (cardType) => {
+    if (revealedInfo[cardType]) {
+      return;
+    }
+
+    setScore((currentScore) => applyInfoRevealPenalty(currentScore));
+    setRevealedInfo((currentState) => ({
+      ...currentState,
+      [cardType]: true
+    }));
+  };
+
   useEffect(() => {
     const loadInitialGame = async () => {
       setLoading(true);
+      setRevealedInfo(defaultRevealedInfo);
       try {
         const countResponse = await fetch(
           `https://api.rawg.io/api/games?key=${API_KEY}&page_size=1&metacritic=70,100`
@@ -321,6 +346,9 @@ function App() {
         onSkillChoice={handleSkillChoice}
         activeSkill={activeSkill}
         bonusMultiplier={bonusMultiplier}
+        revealedInfo={revealedInfo}
+        onRevealInfo={handleRevealInfo}
+        score={score}
       />
     </div>
   );

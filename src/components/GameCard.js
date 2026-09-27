@@ -14,7 +14,10 @@ const GameCard = ({
   skillReady,
   onSkillChoice,
   activeSkill,
-  bonusMultiplier = 0
+  bonusMultiplier = 0,
+  revealedInfo = { platforms: false, metacritic: false },
+  onRevealInfo,
+  score = 0
 }) => {
   const [userGuess, setUserGuess] = useState({
     title: '',
@@ -123,40 +126,60 @@ const GameCard = ({
           <div className="game-info">
             <div className="info-section">
               <h3>Platforms</h3>
-              <div className="platforms-list">
-                {game.platforms && game.platforms.length > 0 ? (
-                  game.platforms.map((platform, index) => (
-                    <span key={index} className="platform-tag">
-                      {platform}
-                    </span>
-                  ))
-                ) : (
-                  <span className="no-info">No platform information</span>
-                )}
-              </div>
+              {revealedInfo.platforms ? (
+                <div className="platforms-list">
+                  {game.platforms && game.platforms.length > 0 ? (
+                    game.platforms.map((platform, index) => (
+                      <span key={index} className="platform-tag">
+                        {platform}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="no-info">No platform information</span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="reveal-info-button"
+                  onClick={() => onRevealInfo && onRevealInfo('platforms')}
+                >
+                  Reveal Platforms (-20 pts)
+                </button>
+              )}
             </div>
             
             <div className="info-section">
               <h3>Details</h3>
-              <div className="details-container">
-                {game.released && (
-                  <div className="detail-item">
-                    <span className="detail-label">Released</span>
-                    <span className="detail-value">{getReleaseYear(game.released)}</span>
-                  </div>
-                )}
-                {game.metacritic && (
-                  <div className="detail-item">
-                    <span className="detail-label">Metacritic</span>
-                    <span 
-                      className="detail-value metacritic-score"
-                      style={{ color: getMetacriticColor(game.metacritic) }}
-                    >
-                      {game.metacritic}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {revealedInfo.metacritic ? (
+                <div className="details-container">
+                  {game.released && (
+                    <div className="detail-item">
+                      <span className="detail-label">Released</span>
+                      <span className="detail-value">{getReleaseYear(game.released)}</span>
+                    </div>
+                  )}
+                  {game.metacritic && (
+                    <div className="detail-item">
+                      <span className="detail-label">Metacritic</span>
+                      <span 
+                        className="detail-value metacritic-score"
+                        style={{ color: getMetacriticColor(game.metacritic) }}
+                      >
+                        {game.metacritic}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="reveal-info-button"
+                  onClick={() => onRevealInfo && onRevealInfo('metacritic')}
+                >
+                  Reveal Metacritic (-20 pts)
+                </button>
+              )}
             </div>
           </div>
 
