@@ -151,7 +151,7 @@ const GameCard = ({
             
             <div className="info-section">
               <h3>Details</h3>
-              {revealedInfo.metacritic ? (
+              {revealedInfo.yearAndScore ? (
                 <div className="details-container">
                   {game.released && (
                     <div className="detail-item">
@@ -175,9 +175,9 @@ const GameCard = ({
                 <button
                   type="button"
                   className="reveal-info-button"
-                  onClick={() => onRevealInfo && onRevealInfo('metacritic')}
+                  onClick={() => onRevealInfo && onRevealInfo('yearAndScore')}
                 >
-                  Reveal Metacritic (-20 pts)
+                  Reveal Year + Score (-25 pts)
                 </button>
               )}
             </div>

@@ -20,13 +20,22 @@ export const calculatePointsWithSkill = (points, skillType, bonusMultiplier = 1)
   return points;
 };
 
-export const applyInfoRevealPenalty = (currentScore) => {
-  return Math.max(currentScore - 20, 0);
+export const calculateRoundPoints = (points, revealPenalty = 0) => {
+  return Math.max(0, points - revealPenalty);
+};
+
+export const applyInfoRevealPenalty = (currentScore, penalty = 20) => {
+  return Math.max(currentScore - penalty, 0);
+};
+
+const REVEAL_PENALTIES = {
+  platforms: 15,
+  yearAndScore: 25
 };
 
 const defaultRevealedInfo = {
   platforms: false,
-  metacritic: false
+  yearAndScore: false
 };
 
 function App() {
@@ -186,7 +195,6 @@ function App() {
       return;
     }
 
-    setScore((currentScore) => applyInfoRevealPenalty(currentScore));
     setRevealedInfo((currentState) => ({
       ...currentState,
       [cardType]: true
@@ -290,11 +298,15 @@ function App() {
       return { points: 0, results, gameOver: hearts <= 1 && points === 0 };
     }
 
+    const revealPenalty = Object.entries(revealedInfo).reduce((total, [key, isRevealed]) => {
+      return total + (isRevealed ? (REVEAL_PENALTIES[key] || 0) : 0);
+    }, 0);
     const adjustedPoints = activeSkill === 'bonus'
       ? calculatePointsWithSkill(points, 'bonus', bonusMultiplier)
       : points;
+    const roundPoints = calculateRoundPoints(adjustedPoints, revealPenalty);
 
-    setScore((currentScore) => currentScore + adjustedPoints);
+    setScore((currentScore) => currentScore + roundPoints);
 
     const nextCorrectAnswerCount = correctAnswerCount + 1;
     setCorrectAnswerCount(nextCorrectAnswerCount);
@@ -304,7 +316,7 @@ function App() {
     }
 
     setShowNextButton(true);
-    return { points: adjustedPoints, results, gameOver: false, bonusApplied: activeSkill === 'bonus' };
+    return { points: roundPoints, results, gameOver: false, bonusApplied: activeSkill === 'bonus' };
   };
 
   const handleNextGame = () => {
