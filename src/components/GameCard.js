@@ -266,7 +266,7 @@ const GameCard = ({
               </button>
               <p className="next-game-hint">
                 {gameOver 
-                  ? "Start a new game with 7 lives and score reset to 0"
+                  ? "Start a new game with 5 lives and score reset to 0"
                   : `Continuing with ${hearts} lives remaining`
                 }
               </p>

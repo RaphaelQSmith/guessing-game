@@ -1,9 +1,26 @@
+import React, { useState } from 'react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import {
   applyInfoRevealPenalty,
   calculatePointsWithSkill,
   calculateRoundPoints,
   shouldUnlockSkill
 } from './App';
+import GameRulesModal from './components/GameRulesModal';
+
+test('rules dialog stays open until the player clicks Start Playing', () => {
+  const RulesDialogHarness = () => {
+    const [isOpen, setIsOpen] = useState(true);
+    return isOpen ? <GameRulesModal onStart={() => setIsOpen(false)} /> : null;
+  };
+
+  render(<RulesDialogHarness />);
+  fireEvent.click(document.querySelector('.game-rules-overlay'));
+  expect(screen.getByRole('dialog', { name: 'How to play' })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Start Playing' }));
+  expect(screen.queryByRole('dialog', { name: 'How to play' })).not.toBeInTheDocument();
+});
 
 test('unlocks the skill after 5 correct answers', () => {
   expect(shouldUnlockSkill(4)).toBe(false);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import GameCard from './components/GameCard';
+import GameRulesModal from './components/GameRulesModal';
 import ScoreBoard from './components/ScoreBoard';
 
 // Minimum length required for a developer guess to be accepted (guesses shorter
@@ -43,13 +44,14 @@ function App() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showNextButton, setShowNextButton] = useState(false);
-  const [hearts, setHearts] = useState(7);
+  const [hearts, setHearts] = useState(5);
   const [gameOver, setGameOver] = useState(false);
   const [correctAnswerCount, setCorrectAnswerCount] = useState(0);
   const [skillReady, setSkillReady] = useState(false);
   const [activeSkill, setActiveSkill] = useState(null);
   const [bonusMultiplier, setBonusMultiplier] = useState(0);
   const [revealedInfo, setRevealedInfo] = useState(defaultRevealedInfo);
+  const [showGameRules, setShowGameRules] = useState(true);
 
   // Background reference for tracked pages (does not trigger re-renders)
   const usedPagesRef = useRef(new Set());
@@ -165,7 +167,7 @@ function App() {
 
   const resetGame = () => {
     setScore(0);
-    setHearts(7);
+    setHearts(5);
     setGameOver(false);
     setShowNextButton(false);
     setCorrectAnswerCount(0);
@@ -178,7 +180,7 @@ function App() {
 
   const handleSkillChoice = (skill) => {
     if (skill === 'heal') {
-      setHearts((currentHearts) => Math.min(7, currentHearts + 1));
+      setHearts((currentHearts) => Math.min(5, currentHearts + 1));
     }
 
     if (skill === 'bonus') {
@@ -362,6 +364,7 @@ function App() {
         onRevealInfo={handleRevealInfo}
         score={score}
       />
+      {showGameRules && <GameRulesModal onStart={() => setShowGameRules(false)} />}
     </div>
   );
 }
